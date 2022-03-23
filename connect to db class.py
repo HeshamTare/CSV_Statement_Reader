@@ -74,16 +74,16 @@ test = DBHelper('localhost', 'world', 'root', 'Password123')
 
 #retrieve data queries:
 
-#print(test.retrieve_data("SELECT * FROM city ORDER BY Population DESC")) #orders all cities in the world by population in descending order
-#print(test.retrieve_data("SELECT Name FROM city where District = 'England' order by Population DESC")) #orders all cities in England by population with the highest populated city as the first row
+print(test.retrieve_data("SELECT * FROM city ORDER BY Population DESC")) #orders all cities in the world by population in descending order
+print(test.retrieve_data("SELECT Name FROM city where District = 'England' order by Population DESC")) #orders all cities in England by population with the highest populated city as the first row
 
 #query to return the capital city (from table City) of each country listed in the Country table and its population. This is then ordered by population descending.
 #the two tables are joined by using the primary key 'ID' column on table City to match against the Capital column on table Country.
-#print(test.retrieve_data("SELECT Country.Name, City.Name, City.population from Country INNER JOIN City ON Country.Capital = City.ID ORDER BY City.Population DESC"))
+print(test.retrieve_data("SELECT Country.Name, City.Name, City.population from Country INNER JOIN City ON Country.Capital = City.ID ORDER BY City.Population DESC"))
 
 #returns the top 10 most spoken languages across the world.
-#common_languages = test.retrieve_data("SELECT language, count(Language) FROM countrylanguage GROUP BY Language ORDER BY count(Language) DESC LIMIT 10")
-#print(common_languages)
+common_languages = test.retrieve_data("SELECT language, count(Language) FROM countrylanguage GROUP BY Language ORDER BY count(Language) DESC LIMIT 10")
+print(common_languages)
 
 
 
@@ -92,13 +92,13 @@ test = DBHelper('localhost', 'world', 'root', 'Password123')
 
 
 ##SQl query to insert a new row into table 'City'
-#test.execute_query("INSERT INTO City (Name, Countrycode, district,population) VALUES ('Tangiers','MAR', 'Tangiers',947952)")
+test.execute_query("INSERT INTO City (Name, Countrycode, district,population) VALUES ('Tangiers','MAR', 'Tangiers',947952)")
 
 ##returns the unique City ID of Tangiers from table 'City' and stores it in the variable
-#TangierCityID = test.retrieve_data("SELECT ID FROM City WHERE Name = 'Tangiers' AND District = 'Tangiers'")
+TangierCityID = test.retrieve_data("SELECT ID FROM City WHERE Name = 'Tangiers' AND District = 'Tangiers'")
 
 ##SQL query to delete 'Tangiers' from the City table using the unique ID retrieved in the above query
-#test.execute_query("DELETE FROM City WHERE ID = {}".format(TangierCityID[2:6]))
+test.execute_query("DELETE FROM City WHERE ID = {}".format(TangierCityID[2:6]))
 
 
 
