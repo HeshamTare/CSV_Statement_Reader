@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 import mysql.connector  # imports mysql library to allow communication between Python and MySQL database
 from mysql.connector import Error  # imports mysql connector error list
 
