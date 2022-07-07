@@ -55,19 +55,29 @@ points = [
     10,
 ]
 
+# merges the two lists (letters and points) into a dictionary
 letter_to_points = {
     key: value for key, value in zip(letters, points)
-}  # merges the two lists (letters and points) into a dictionary
+}  
 
-letter_to_points[" "] = 0  # adds the points value for an empty space
+# adds the points value for an empty space
+letter_to_points[" "] = 0  
 
 print(letter_to_points)
 
-# this function returns the points for a word
 def score_word(word):
+    """calculates the points for each character of a word.
+    
+    Args:
+        word: the word for which the score/points is to be calculated.
+    
+    Returns:
+        the total points of all characters within the word.
+    """
+    
     point_total = 0
 
-    # loops through each character and returns the points for that character from the letter_to_points dictionary
+    # obtains and totals the points awarded for each character in the word
     for char in word.upper():
         point_total += letter_to_points.get(char, 0)
     return point_total
@@ -80,8 +90,17 @@ player_to_words = {
     "Player 4": ["ZAP", "COMA", "PERIOD"],
 }
 
-# calculates the points of each player in the dictionary 'player_to_words' and returns a dictionary showing each player and their points. Also used to update a players points when a new word is played.
+
 def update_point_totals(word):
+    """calculates the points of each player in the dictionary 'player_to_words'. Also used to update a players points when a new word is played.
+    
+    Args:
+        word: the word entered by each player in the player_to_words dictionary.
+    
+    Returns:
+        A dictionary showing each player and their points. 
+    """
+    
     player_to_points = {}
     for player, words in player_to_words.items():
         player_points = 0
@@ -91,8 +110,17 @@ def update_point_totals(word):
     return player_to_points
 
 
-# allows a player to play a word and will add that player and their points to the 'player_to_points' dictionary
 def play_word(player, word):
+    """allows a player to play a word and will add that player and their points to the 'player_to_points' dictionary.
+    
+    Args:
+        player: the name of the new player.
+        word: the word played by the new player.
+    
+    Returns:
+        an updated dictionary of all players and their score.
+    """
+    
     if player in player_to_words.keys():
         player_to_words[player].append(word)
     else:
