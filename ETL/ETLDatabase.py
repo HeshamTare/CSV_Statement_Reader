@@ -102,7 +102,7 @@ class DBHelper:
             self.connection.commit()  
 
             self.__disconnect__
-        except Error, e:
+        except Error as e:
             
             # if an error was encountered in any of the SQL queries, any changes are undone
             self.connection.rollback()  
