@@ -58,7 +58,7 @@ with open('midata4286.csv', newline='') as statement:
     # returns a dictionary showing the total of all credits received organised by year and month.
     x = monthly_amounts(bank_statement, 'CR')  
 
-    print x
+    print (x)
     
     # holds the total of all values in the dictionary 'x'
     total = 0  
@@ -72,7 +72,7 @@ with open('midata4286.csv', newline='') as statement:
             total += mon
             c_or_d_lst.append(mon)
 
-    print total
+    print (total)
     
     # references an index in the list 'c_or_d_lst' allowing two months to be compared
     counter = 0  
@@ -86,4 +86,4 @@ with open('midata4286.csv', newline='') as statement:
             # calculates percentage difference between the current month interation and previous month
             percent_diff = (amount / c_or_d_lst[counter] - 1) * 100  
             counter += 1
-        print percent_diff
+        print (percent_diff)
