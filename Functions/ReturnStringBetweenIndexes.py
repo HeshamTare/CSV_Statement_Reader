@@ -41,5 +41,5 @@ def substring_between_letters(word, start, end):  # characters between the 'star
             return word
 
 
-print substring_between_letters('apple', 'p', 'e')
-print substring_between_letters('apple', 'a', 'e')
+print (substring_between_letters('apple', 'p', 'e'))
+print (substring_between_letters('apple', 'a', 'e'))
