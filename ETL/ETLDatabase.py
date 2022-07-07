@@ -31,7 +31,7 @@ class DBHelper:
 
         # confirms connection has been successful
         if self.connection.is_connected:  
-            print 'connected db'
+            print ('connected db')
 
     def __disconnect__(self):  
         """disconnect from the target database
@@ -93,10 +93,10 @@ class DBHelper:
                 for i in amend_SQL_query:
                     self.cursor.execute(i, multi=True)
 
-                print 'Amend successful'
+                print ('Amend successful')
             else:
                 self.cursor.execute(amend_SQL_query)
-                print 'Amend successful'
+                print ('Amend successful')
                 
             # confirms and commits all amends to the database
             self.connection.commit()  
@@ -106,28 +106,28 @@ class DBHelper:
             
             # if an error was encountered in any of the SQL queries, any changes are undone
             self.connection.rollback()  
-            print e
+            print (e)
 
 
 test = DBHelper('localhost', 'world', 'root', 'Password123')
 
 # orders all cities in the world by population in descending order
-print test.retrieve_data('SELECT * FROM city ORDER BY Population DESC')  
+print (test.retrieve_data('SELECT * FROM city ORDER BY Population DESC'))
 
 # orders all cities in England by population with the highest populated city as the first row
-print test.retrieve_data("SELECT Name FROM city where District = 'England' order by Population DESC"
-                         )  
+print (test.retrieve_data("SELECT Name FROM city where District = 'England' order by Population DESC"
+                         ))
 
 # returns the capital city (from table City) of each country listed in the Country table and its population. Then ordered by population descending.
 # the two tables are joined by using the primary key 'ID' column on table City to match against the Capital column on table Country.
-print test.retrieve_data('SELECT Country.Name, City.Name, City.population from Country INNER JOIN City ON Country.Capital = City.ID ORDER BY City.Population DESC'
-                         )
+print (test.retrieve_data('SELECT Country.Name, City.Name, City.population from Country INNER JOIN City ON Country.Capital = City.ID ORDER BY City.Population DESC'
+                         ))
 
 # returns the top 10 most spoken languages across the world.
 common_languages = \
     test.retrieve_data('SELECT language, count(Language) FROM countrylanguage GROUP BY Language ORDER BY count(Language) DESC LIMIT 10'
                        )
-print common_languages
+print (common_languages)
 
 # insert a new row into table 'City'
 test.execute_query("INSERT INTO City (Name, Countrycode, district,population) VALUES ('Tangiers','MAR', 'Tangiers',947952)"
@@ -172,7 +172,7 @@ for continent in list_of_continents_cleaned:
     # adds the current name of the current continent and its population (cleaned) to a dictionary
     Continent_Population[continent] = int_population  
 
-print Continent_Population
+print (Continent_Population)
 
 # adds each continent and its population to the table Continent in the 'world' database
 for (key, value) in Continent_Population.items():
