@@ -35,4 +35,4 @@ lis_num = [
     2,
     11,
     ]
-print get_repeated_number(lis_num)
+print (get_repeated_number(lis_num))
