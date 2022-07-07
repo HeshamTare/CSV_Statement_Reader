@@ -1,4 +1,6 @@
 # function to find and return any repeated numbers within a list
+
+
 def get_repeated_number(lis):
     repeated_numbers = []  # empty list to store any numbers which are repeated
     for i in range(len(lis)):  # these nested for loops loop through each index in the list and compares it to all other indexes in the list
@@ -11,6 +13,7 @@ def get_repeated_number(lis):
                 else:
                     repeated_numbers.append(lis[i])
     return repeated_numbers
+
 
 lis_num = [
     5,
