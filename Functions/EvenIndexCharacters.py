@@ -23,4 +23,4 @@ def every_other_letter(word):
     return temp_strng
 
 
-print every_other_letter('Hello Hesham')
+print (every_other_letter('Hello Hesham'))
