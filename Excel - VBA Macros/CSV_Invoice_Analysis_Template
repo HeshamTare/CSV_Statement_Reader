@@ -1,0 +1,207 @@
+  Sub CSV_Invoice_Analysis_Template_Setup()
+    ActiveSheet.Cells.Select
+    Selection.ClearContents
+    
+    Range("A1").Select
+    
+    ActiveSheet.Paste
+  
+  
+  End Sub
+ 
+ Sub CSV_Invoice_Analysis_Template()
+ 
+    Call CSV_Invoice_Analysis_Template_Setup
+    
+    If Range("E1").Value = "Terminated" Then
+        Columns("E:E").Select
+        Selection.Cut
+        
+        Columns("O:O").Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+        
+    End If
+    
+    Dim lastrow As Long 'stores row number of last populated row
+        
+    
+    'Worksheets("Results").Delete
+    
+    Sheets("Results").Activate
+    Columns("A:J").Delete
+    
+    
+    
+        
+    'Sheets.Add.Name = "Results" 'adds new sheet to store result set to copy and paste :)
+    
+    Worksheets("Data").Activate 'makes the "Data" sheet the current relative/active sheet
+    
+       
+    lastrow = Cells(Rows.Count, 1).End(xlUp).Row 'finds out the last populated row
+    
+    
+    Range("A2", "D" & lastrow).Select 'copies the contents of cells A2:D last row to paste over to the results sheet
+    Selection.Copy
+    
+    Worksheets("Results").Activate
+    
+    Range("A2").Select
+    ActiveSheet.Paste
+    
+    'Titles the necessary columns
+    Range("A1") = "PackageID"
+    Range("B1") = "PackageItemID"
+    Range("C1") = "Total No. SiMs"
+    Range("D1") = "Usage (MB/SMS)"
+    Range("E1") = "Calculated Pool"
+    Range("F1") = "Usage Type"
+    
+    'loop through each cell in column D (which will be partials) and if populated moves it over to column C
+    
+    Dim currentrow As Integer
+    
+    currentrow = 2 'set to 2 as first row contains headers
+    
+    'loops through each row in the partials column and moves it over to the active sims column
+    Do While currentrow <= lastrow
+        
+        If Not IsEmpty(Range("D" & currentrow).Value) Then
+            Range("D" & currentrow).Copy
+            Range("C" & currentrow).Select
+            ActiveSheet.Paste
+        End If
+        
+        currentrow = currentrow + 1
+               
+    Loop
+    
+    Range("D2", "D" & lastrow).ClearContents
+    
+    'copies over number of sims used data to then loop through and add total no sims column
+    Worksheets("Data").Activate
+    Range("I2", "I" & lastrow).Select
+    Selection.Copy
+    
+    Worksheets("Results").Activate
+    Range("D2").Select
+    ActiveSheet.Paste
+    
+    currentrow = 2 'reset to 2 as looping through amounts of sims using data now
+    
+    'loops through each cell in column D (which will be total no of sims using data) to copy and paste over to total no sims column
+    Do While currentrow <= lastrow
+        
+        If Not IsEmpty(Range("D" & currentrow).Value) Then
+            Range("D" & currentrow).Copy
+            Range("C" & currentrow).Select
+            ActiveSheet.Paste
+        End If
+        
+        currentrow = currentrow + 1
+               
+    Loop
+    
+    Range("D2", "D" & lastrow).ClearContents
+    
+    'changes data type of column D to general
+    Columns("D").Select
+    Selection.NumberFormat = "General"
+        
+    'this block populates the usage type, pool amount and total usage from the package sheet by looping through and applying a xlookup
+    Dim i As Integer
+    Dim currentrowusage As Double
+        
+    For i = 2 To lastrow
+           
+        Range("G" & i).Formula = "=XLOOKUP(B" & i & ",Packages!A:A,Packages!C:C,,0)" 'gets the pkgitmid title
+           
+        Range("F" & i).Formula = "=XLOOKUP(B" & i & ",Packages!A:A,Packages!E:E,,0)" 'gets the transmission type
+               
+        Range("E" & i).Formula = "=XLOOKUP(B" & i & ",Data!B:B,Data!M:M,,0)" 'gets the pool amount
+                     
+        Range("D" & i).Formula = "=XLOOKUP(B" & i & ",Data!B:B,Data!H:H,,0)" 'gets the total usage amount
+                     
+        'loops through each row and checks if the data type is "Data". If it is it converts it to MB, nested if loop does the same to the pool amount
+        If Range("F" & i) = "Data" Then
+            currentrowusage = 0
+            currentrowusage = Range("D" & i).Value
+            Range("D" & i).ClearContents
+            Range("D" & i).Formula = "=SUM(" & currentrowusage & "/1024/1024)" 'converts data usage amount to MB
+            Range("D" & i).Value = Round(Range("D" & i).Value, 2) 'rounds the contents of the cell to 2 decimal places
+            If Range("E" & i).Value > 0 Then
+                currentrowusage = 0
+                currentrowusage = Range("E" & i).Value
+                Range("E" & i).ClearContents
+                Range("E" & i).Formula = "=SUM(" & currentrowusage & "/1024/1024)" 'converts pool amount to MB
+            End If
+        End If
+    Next i
+    
+    'copies all of the formulas from above and pastes the values only into the same cells
+    Range("D2", "G" & lastrow).Select
+    Selection.Copy
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlPasteSpecialOperationNone, SkipBlanks:=False, Transpose:=False
+    
+    
+    'finds and replaces any cells that only contain 0 with nothing
+    Range("D2", "E" & lastrow).Select
+    Selection.Replace What:="0", Replacement:="", LookAt:=xlWhole, _
+    SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+    ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+    
+    'inserts a new column to the left of current column C
+    Columns("C:C").Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+    
+    'names column "price" and then copies and pastes the price column from data sheet to results sheet
+    Range("C1") = "Price"
+    Sheets("Data").Activate
+    Range("J2", "J" & lastrow).Select
+    Selection.Copy
+    
+    Sheets("Results").Activate
+    Range("C2").Select
+    ActiveSheet.Paste
+    
+    Range("H1") = "PkgItmID Title"
+    
+    'aligns the contents of the columns to the right
+    Columns("C:F").HorizontalAlignment = xlRight
+    
+    'freezes the top row
+    ActiveWindow.SplitRow = 1
+    ActiveWindow.FreezePanes = True
+        
+    'Forgot to add termination column for postpay script, so amended start slightly and added this bit below to end so as I don't have to amend the whole script
+    
+    Sheets("Data").Activate
+    
+    If Range("N1") = "Terminated" Then
+        Sheets("Results").Activate
+    
+        Columns("E:E").Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+        Range("E1") = "Terminations"
+        
+        Sheets("Data").Activate
+        Range("N2", "N" & lastrow).Select
+        Selection.Copy
+        Sheets("Results").Activate
+        Range("E2").Select
+        ActiveSheet.Paste
+    End If
+    
+    Sheets("Results").Activate
+    
+    Columns("A:I").AutoFit
+    
+    Columns("C:D").Select
+    Selection.NumberFormat = "General"
+    
+    Range("A1").Select
+    
+End Sub
+
+
+
+
+
+
