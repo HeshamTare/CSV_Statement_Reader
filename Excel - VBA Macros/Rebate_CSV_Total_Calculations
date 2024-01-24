@@ -1,0 +1,133 @@
+ Sub Rebate_CSV_Total_row()
+'
+' Rebate_CSV_Total_row Macro
+'
+
+   '---------------------------------------------------------------------------------------
+   'this block deals with  finding and removing letter a from the pkgitmids
+   
+   Dim last_pop_col As Integer
+   Dim last_pop_col_pkgitmid As Integer
+   Dim first_pop_col_pkgitmid As Integer
+   Dim last_pop_col_pkgitmid_letter As String
+   Dim start_cell As Range
+   Dim end_cell As Range
+
+      
+   last_pop_col = Cells(4, Columns.Count).End(xlToLeft).Column 'counts the amount of populated columns
+   
+   last_pop_col_pkgitmid = last_pop_col - 6 '-6 as removes last 6 columns which are always after the last pkgitmid
+   
+   first_pop_col_pkgitmid = 7 'this will always be the first column from which the pkgitmids exist/start
+   
+   Range("E2").Formula = "=ADDRESS(4," & first_pop_col_pkgitmid & ",4)"
+   Range("F2").Formula = "=ADDRESS(4," & last_pop_col_pkgitmid & ",4)"
+   
+   Set start_cell = Cells(4, first_pop_col_pkgitmid)
+   Set end_cell = Cells(4, last_pop_col_pkgitmid)
+
+   
+   'find and replaces 'a' within the dynamic range
+   Range(start_cell, end_cell).Select
+   Selection.Replace What:="a", Replacement:="", LookAt:=xlPart, _
+   SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+   ReplaceFormat:=False, FormulaVersion:=xlReplaceFormula2
+   
+   '---------------------------------------------------------------------------------------
+
+   Dim lastrow As Long
+   Dim columnToCheck As Integer
+   Dim currentcol As Integer
+   Dim lastcol As Integer
+   Dim highest_last_row As Integer
+
+   currentcol = 1
+   lastcol = 7
+   highest_last_row = 0
+
+   Do While currentcol < lastcol
+        'Find the last populated row in the specified column
+        lastrow = Cells(Rows.Count, currentcol).End(xlUp).Row
+
+        If lastrow > highest_last_row Then
+            highest_last_row = lastrow
+        End If
+
+        currentcol = currentcol + 1
+
+    Loop
+
+    Dim highest_last_row_new As Integer
+
+    highest_last_row_new = highest_last_row + 2
+
+    Range("A1").Select
+
+    'Cells(highest_last_row_new, 1).FormulaR1C1 = "=COUNTA(R[-" & highest_last_row - 5 & "]C:R[-2]C)"
+
+    Cells(highest_last_row_new, 1).FormulaR1C1 = "=COUNTA(R[-" & highest_last_row - 3 & "]C:R[-2]C)"
+
+
+    Range("A" & highest_last_row_new).Select
+    Selection.Copy
+    Range("B" & highest_last_row_new).Select
+    ActiveSheet.Paste
+    Range("C" & highest_last_row_new).Select
+    ActiveSheet.Paste
+    Range("E" & highest_last_row_new).Select
+    ActiveSheet.Paste
+    Range("F" & highest_last_row_new).Select
+    ActiveSheet.Paste
+    Cells(highest_last_row_new, last_pop_col - 4).Select
+    ActiveSheet.Paste
+    Cells(highest_last_row_new, last_pop_col - 3).Select
+    ActiveSheet.Paste
+    Cells(highest_last_row_new, last_pop_col - 2).Select
+    ActiveSheet.Paste
+    Cells(highest_last_row_new, last_pop_col - 1).Select
+    ActiveSheet.Paste
+    Cells(highest_last_row_new, last_pop_col).Select
+    ActiveSheet.Paste
+ 
+
+    'Cells(lastRow, 14).FormulaR1C1 = "=COUNTIF(R[-" & lastRow - 5 & "]C:R[-2]C,""Used SIM"")"
+    'Cells(lastRow, 15).FormulaR1C1 = "=COUNTIF(R[-" & lastRow - 5 & "]C:R[-2]C,""Rebate"")"
+
+    Rows(highest_last_row_new).Select
+
+    Selection.Font.Bold = True
+    With Selection.Font
+        .Name = "Calibri"
+        .Size = 12
+        .Strikethrough = False
+        .Superscript = False
+        .Subscript = False
+        .OutlineFont = False
+        .Shadow = False
+        .Underline = xlUnderlineStyleNone
+        .ThemeColor = xlThemeColorLight1
+        .TintAndShade = 0
+        .ThemeFont = xlThemeFontMinor
+    End With
+
+    Rows(4).Select
+    Selection.Font.Bold = True
+    With Selection.Font
+        .Name = "Calibri"
+        .Size = 12
+        .Strikethrough = False
+        .Superscript = False
+        .Subscript = False
+        .OutlineFont = False
+        .Shadow = False
+        .Underline = xlUnderlineStyleNone
+        .ThemeColor = xlThemeColorLight1
+        .TintAndShade = 0
+        .ThemeFont = xlThemeFontMinor
+    End With
+    
+    Range("E2").ClearContents
+    Range("F2").ClearContents
+   
+    
+End Sub
