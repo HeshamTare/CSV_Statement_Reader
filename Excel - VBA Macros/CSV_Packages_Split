@@ -1,0 +1,99 @@
+Sub TotalUsage()
+'
+' TotalUsage Macro
+'
+' Keyboard Shortcut: Ctrl+q
+'
+Dim lastrow As Long
+lastrow = Cells(Rows.Count, 1).End(xlUp).Row
+  
+Columns("T:T").Select
+Selection.Insert Shift:=xlToRight
+Range("T2").Select
+ActiveCell.FormulaR1C1 = "TotalUsage"
+
+Range("T3").Select
+ActiveCell.FormulaR1C1 = "=IF(ISBLANK(RC[-1]),IF(ISBLANK(RC[-9]),"""",RC[-9]),SUM(RC[-1]+RC[-9]))"
+Range("T3:T" & lastrow).FillDown
+
+Range("T2").Select
+End Sub
+
+
+Sub SummaryBreakdownFormatting()
+'
+' SummaryBreakdownFormatting Macro
+'
+
+'
+    Rows("2:2").Select
+    Selection.AutoFilter
+    Range("A2,E2,G2").Select
+    Range("G2").Activate
+    Selection.Columns.AutoFit
+    Range("I:I,J:J,K:K").Select
+    Range("K1").Activate
+    Selection.ColumnWidth = 11.25
+    Columns("B:B").Select
+    Selection.ColumnWidth = 20.2
+    Application.Run "PERSONAL.XLSB!TotalUsage"
+    Range("R:R,S:S,T:T").Select
+    Range("T1").Activate
+    Selection.ColumnWidth = 15.3
+    Columns("Q:Q").Select
+    Selection.ColumnWidth = 9.5
+End Sub
+Sub SplitPackages()
+'
+' SplitPackages Macro
+'
+' Keyboard Shortcut: Ctrl+Shft+P
+'
+    Dim ws As Worksheet
+    Set ws = ActiveSheet
+    ActiveSheet.Cells.Select
+    Selection.Copy
+    Sheets.Add After:=Sheets(Sheets.Count)
+    
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+    Application.Run "PERSONAL.XLSB!SummaryBreakdownFormatting"
+    Range("A1").Select
+    Selection.ClearContents
+    
+    
+    Range("B1").Select
+    
+    ActiveCell.FormulaR1C1 = "=MID(R[2]C[3],2,LEN(R[2]C[3])-2)"
+    ActiveSheet.Name = "Pkg " + CStr(ActiveSheet.Range("B1"))
+    
+    Range("A1").Select
+    ActiveCell.FormulaR1C1 = "=CONCAT(""SiM Contract "", R[0]C[1])"
+    
+    Range("A1").Select
+    Selection.Copy
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Application.CutCopyMode = False
+    With Selection.Font
+        .Name = "Calibri"
+        .Size = 16
+        .Strikethrough = False
+        .Superscript = False
+        .Subscript = False
+        .OutlineFont = False
+        .Shadow = False
+        .Underline = xlUnderlineStyleNone
+        .ThemeColor = xlThemeColorLight1
+        .TintAndShade = 0
+        .ThemeFont = xlThemeFontMinor
+    End With
+    Range("B1").Select
+    Selection.ClearContents
+    Range("A1").Select
+    ws.Select
+End Sub
+
+
+
+
