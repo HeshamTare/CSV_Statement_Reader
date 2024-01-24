@@ -1,0 +1,63 @@
+DROP TEMPORARY TABLE IF EXISTS HActiveSiMs98;
+DROP TEMPORARY TABLE IF EXISTS HActiveSiMs98_PackageID_Currency;
+DROP TEMPORARY TABLE IF EXISTS HTPOOL98;
+
+SET @UserID = 'b68c98774f57c38a3857eb71468aabd0';
+SET @BLITable = 'LineItems202312';
+SET @StartDate = '2024-01-01 %';
+
+CREATE TEMPORARY TABLE HActiveSiMs98(
+ID INT auto_increment NOT NULL, PRIMARY KEY (ID), PackageID INT,PackageItemID INT, ActiveSiMs INT, Partials INT, BundleQuantity BIGINT, OutofBundleUsage BIGINT, InBundleUsage BIGINT, TotalUsage BIGINT, NoSiMsUsingData INT, TotalPrice DOUBLE, PricePerSim DOUBLE, RebateQuantity INT, RebateAmount DOUBLE);
+
+#retrieves and inserts active sims per package
+SET @SQL = concat('INSERT INTO HActiveSiMs98 (PackageId, PackageItemID, ActiveSiMs, TotalPrice, PricePerSim) SELECT Distinct(PackageID), PackageItemID, Count(Distinct(Owner2Dacct.ICCID)), sum(Price), avg(Price) AS ''Total Price'' FROM ', @BLITable, ' AS BLI LEFT JOIN Owner2Dacct ON BLI.Owner2DacctID = Owner2Dacct.ID
+WHERE BLI.UserID = ''', @UserID, ''' AND Status NOT IN (''VOID'',''VOIDZERO'', ''BUNDLE'', ''VOIDBUNDLE'') AND PackageItemID IN (2,0,19) AND StartDate LIKE ''', @StartDate, '''
+GROUP BY PackageID, PackageItemID;');
+
+Prepare STMT FROM @SQL;
+EXECUTE STMT;
+
+#retrieves and inserts partials
+SET @SQL = concat('INSERT INTO HActiveSiMs98 (PackageId, PackageItemID, Partials, TotalPrice) SELECT Distinct(PackageID), PackageItemID, Count(Distinct(Owner2Dacct.ICCID)), sum(Price) FROM ', @BLITable, ' AS BLI LEFT JOIN Owner2Dacct ON BLI.Owner2DacctID = Owner2Dacct.ID
+WHERE BLI.UserID = ''', @UserID, ''' AND Status NOT IN (''VOID'',''VOIDZERO'', ''BUNDLE'', ''VOIDBUNDLE'') AND PackageItemID IN (2,0,19) AND StartDate NOT LIKE ''', @StartDate, ''' AND Owner2DacctID < 1000000000
+GROUP BY PackageID, PackageItemID;');
+
+Prepare STMT FROM @SQL;
+EXECUTE STMT;
+
+#inserts rebate amount and quantity
+SET @SQL = concat('INSERT INTO HActiveSiMs98 (PackageID, RebateQuantity, RebateAmount) SELECT DISTINCT(PackageID), OutOfBundleQuantity, Price FROM ', @BLITable, ' AS BLI WHERE StartDate < ''', @StartDate, ''' AND Owner2DacctID >= 1000000000 
+AND Price < 0 AND UserID = ''', @UserID, ''' AND Status NOT IN (''VOID'',''VOIDZERO'',''BUNDLE'') AND PackageItemID IN (''0'',''2'') GROUP BY PackageID;');
+
+Prepare STMT FROM @SQL;
+EXECUTE STMT;
+
+#retrieves and inserts data info and sms info
+SET @SQL = concat('INSERT INTO HActiveSiMs98 (PackageID, PackageItemID, BundleQuantity, OutofBundleUsage, InBundleUsage, TotalUsage, NoSiMsUsingData, TotalPrice) 
+SELECT PackageID, PackageItemID, BundleQuantity, sum(CASE WHEN Owner2DacctID < 10000000000 THEN OutOfBundleQuantity END), sum(CASE WHEN Owner2DacctID < 10000000000 THEN InBundleQuantity END), 
+sum(CASE WHEN Owner2DacctID < 10000000000 THEN OutOfBundleQuantity+InBundleQuantity END), CASE WHEN PackageID NOT IN (0,2,19) THEN Count(Owner2DacctID) END, sum(Price) 
+FROM ', @BLITable, ' WHERE UserID = ''', @UserID, ''' AND Status NOT IN (''VOID'',''VOIDZERO'', ''BUNDLE'', ''VOIDBUNDLE'') AND Price IS NOT NULL AND PackageItemID NOT IN (0,2,19) GROUP BY PackageID, PackageItemID;');
+
+prepare STMT FROM @SQL;
+EXECUTE STMT;
+
+#Table to store currency for each PackageID
+CREATE TEMPORARY TABLE HActiveSiMs98_PackageID_Currency (PackageID INT, Currency TEXT);
+
+#populates temp table HActiveSiMs98_PackageID_Currency with PackageID's and their currency
+INSERT INTO HActiveSiMs98_PackageID_Currency(PackageID,Currency) SELECT DISTINCT(HActiveSiMs98.PackageID),Package.Currency FROM HActiveSiMs98 JOIN Package ON HActiveSiMs98.PackageID = Package.PackageID;
+
+#temp table to store pool info 
+CREATE TEMPORARY TABLE HTPOOL98 (PackageID INT, PackageItemID INT, Pool BIGINT);
+#retrieves and inserts pool info into temp table
+SET @SQL = concat('INSERT INTO HTPOOL98 (PackageID, PackageItemID, Pool) SELECT PackageID, PackageItemID, sum(BundleQuantity) FROM ', @BLITable, ' WHERE UserID = ''', @UserID, ''' AND Status = ''BUNDLE'' GROUP BY PackageID, PackageItemID;');
+
+prepare STMT FROM @SQL;
+Execute STMT;
+
+SELECT HActiveSiMs98.PackageID, HActiveSiMs98.PackageItemID, ActiveSiMs, Partials, BundleQuantity, OutofBundleUsage, InBundleUsage, TotalUsage, NoSiMsUsingData, TotalPrice, PricePerSim, Currency, Pool FROM HActiveSiMs98 #RebateQuantity, RebateAmount, ID
+LEFT JOIN HActiveSiMs98_PackageID_Currency ON HActiveSiMs98.PackageID = HActiveSiMs98_PackageID_Currency.PackageID 
+LEFT JOIN HTPOOL98 ON HActiveSiMs98.PackageItemID = HTPOOL98.PackageItemID
+ORDER BY  HActiveSiMs98.PackageID, HActiveSiMs98.PackageItemID;
+
+#SELECT sum(ActiveSiMs) FROM HActiveSiMs98;
